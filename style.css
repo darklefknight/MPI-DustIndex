@@ -1,0 +1,92 @@
+/* style sheet for the DeviceAvailability.html
+Use the block ":root" to change the colors.
+
+@author: Tobias Machnitzki (tobias.machnitzki@mpimet.mpg.de)
+*/
+
+
+/* -- Color definition: --*/
+:root {
+    --headbackground: #9BD770;
+    --headtext: #1B3409;
+    --bodybackground: #EBF7E3;
+    --buttonbackground: #66B032;
+    --buttonbackgroundhover: #5DADE2;
+    --buttontext: #FDFEFE;
+    --buttontexthover: var(--buttontext);
+    --info: #FFFFFF;
+
+}
+
+.bk-root .bk-bs-btn-success {
+    color: var(--buttontext);
+    background-color: var(--buttonbackground);
+    border-color: var(--buttonbackground);
+}
+
+.bk-root .bk-bs-btn-success:focus {
+    color: var(--buttontext);
+    background-color: var(--buttonbackground);
+    border-color: var(--buttonbackground);
+}
+
+.bk-root .bk-bs-btn-success:active {
+    color: var(--buttontext);
+    background-color: var(--buttonbackground);
+    border-color: var(--buttonbackground);
+}
+
+.bk-root .bk-bs-btn-success:hover {
+    color: var(--buttontexthover);
+    background-color: var(--buttonbackgroundhover);
+    border-color: var(--buttonbackgroundhover);
+}
+
+#container {
+    margin-left: 20px;
+    margin-right: 20px;
+    width: auto;
+    height: 1300px;
+    background-color: var(--bodybackground);
+}
+
+#header {
+    width: auto;
+    height: 100px;
+    background-color: var(--headbackground);
+    color: var(--headtext);
+    text-align: center;
+    vertical-align: middle;
+    font-weight: bold;
+}
+
+/* --- Kommentar ---
+die Box #navigation wird vom nachfolgenden Element (#content) umflossen ---- */
+#navigation {
+    width: 300px;
+    margin-left: 1480px;
+    margin-top: 100px;
+    padding: 10px;
+    border: 4px solid var(--headtext);
+    background: var(--info);
+    border-radius: 15px;
+    -moz-border-radius: 15px;
+}
+
+#content {
+    width: 750px;
+    min-height: 800px;
+    margin-right: 200px;
+    float: left;
+
+}
+
+#footer {
+    width: 950px;
+    height: 80px;
+}
+
+span {
+    display: inline-block;
+    vertical-align: middle;
+}

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+Website to display the Device-Availability of the Barbados Cloud Observatory
+
+Dependencies:
+    - style.css
+    - AvailabilityPlot.js
+
+@author: Tobias Machnitzki (tobias.machnitzki@mpimet.mpg.de)
+-->
+
+<head>
+    <meta charset="utf-8">
+    <title>Device Availability</title>
+
+    <link href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.6.min.css" rel="stylesheet" type="text/css">
+    <link href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.6.min.css" rel="stylesheet" type="text/css">
+    <link href="style.css" rel="stylesheet" type="text/css"> <!-- Style-sheet used for this html  -->
+
+    <script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.6.min.js"></script>
+    <script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.6.min.js"></script>
+</head>
+
+<body>
+<div id="container">
+    <div id="header">
+        <span>
+        <h2>Device Availability of the Barbados Cloud Observatory</h2>
+            </span>
+    </div>
+
+    <div id="content">
+        <div class="bk-root">
+            <div class="bk-plotdiv" id="AvailabilityPlotElementID"></div>
+        </div>
+    </div>
+
+    <div id="navigation">
+        <p id="devInfo">Click on a device name to open a new tab with a quicklook of the last processed data of the
+            device.</p>
+        <p id="selInfo">Use the dropdown list to choose a timeframe or just drag a box with your mouse inside the
+            plot.</p>
+        <p id="buttonInfo">
+            <br data-mce-bogus="1">
+        </p>
+    </div>
+</div>
+
+<!-- Scripts from Availability Plot -->
+<script src="DustIndexPlot.js"></script>
+
+</body>
+</html>
