@@ -11,8 +11,6 @@ from bokeh.io import show,curdoc
 from bokeh.plotting import figure
 from bokeh.layouts import gridplot
 from bokeh.embed import components
-from bokeh.events import ButtonClick
-from bokeh.models.glyphs import Segment
 
 
 def randomData():
@@ -102,8 +100,9 @@ def createHoverTool():
         },
         # display a tooltip whenever the cursor is vertically in line with a glyph
         mode='vline',
-        callback=CustomJS(code=open("vline_callback.js").read(), args=dict(line_source=line_source,source=source)),
-        point_policy='follow_mouse'
+        callback=CustomJS(code=open("vline_callback.js").read(), args=dict(line_source=line_source,source=source,hist_source=hist_source)),
+        point_policy='snap_to_data',
+        line_policy="nearest"
     )
     return hover
 
@@ -117,7 +116,6 @@ def setGrid(both=False):
 def update():
     source.data = source.from_df(data[['time','DIL','DIT']])
     source_static.data = source.data
-    # line_source.data =
 
 def button1_callback(event):
     setGrid(True)
@@ -131,9 +129,7 @@ if __name__ == "__main__":
     source_static = ColumnDataSource(data=dict(time=[],DIL=[],DIT=[]))
 
     line_source = ColumnDataSource(data=dict(x=[data["time"].values[0]]))
-
-    factors = ["Dust Index Low", "Dust Index Total"]
-    means = [data['DIL'].mean(0), data['DIT'].mean(0)]
+    hist_source = ColumnDataSource(data=dict(factors=["Dust Index Low", "Dust Index Total"],x=[data['DIL'].mean(0), data['DIT'].mean(0)]))
 
     levels ={0    :"Very Low",
              0.01 : "Low",
@@ -143,18 +139,21 @@ if __name__ == "__main__":
 
     #TODO: Write the level on top of the Line
 
-    hover = createHoverTool()
 
-    toolbox = [hover]
+
     x_range = Range1d(start=0, end=0.01)
-    p1 = figure(title="Dust Index", responsive=True,x_range=x_range,y_range=factors, tools="")
-    p1.segment(0, factors, means , factors, line_width=4, line_color="black")
-    p1.circle(means, factors, size=15, fill_color="orange", line_color="black", line_width=3, )
+    label_factors = ["Dust Index Low", "Dust Index Total"]
+    p1 = figure(title="Dust Index", responsive=True,x_range=x_range,y_range=label_factors, tools="")
+    segm = p1.segment(x0=0, y0='factors', x1='x' , y1='factors', line_width=4, line_color="black",source=hist_source)
+    p1.circle('x', 'factors', size=15, fill_color="orange", line_color="black", line_width=3, source=hist_source)
     p1.xaxis.visible = False
     p1.xgrid.visible = False
     p1.ygrid.visible = False
     p1.border_fill_color = None
     p1.background_fill_color = None
+
+    hover = createHoverTool()
+    toolbox = [hover]
 
     p2 = figure(responsive=True, tools=toolbox, y_range=(0,0.01),x_axis_type="datetime")
     DILline = p2.line(x="time",y="DIL",source=source,line_width=3,line_color='blue',name='DIL-Line')
@@ -162,9 +161,8 @@ if __name__ == "__main__":
     p2.border_fill_color = None
     p2.background_fill_color = None
 
+    #creates the vertical line indicating the x-position of the mouse:
     p2.segment(x0='x', y0=0, x1='x', y1=5, line_width=3, source=line_source, line_color='black', line_dash="dashed")
-    # hover = HoverTool(tooltips=None, point_policy='follow_mouse',
-    #                   callback=CustomJS(code=js, args={'line_source': line_source}))
 
     # p2.xaxis.visible= False
     # p2.xgrid.visible=False
