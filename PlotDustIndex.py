@@ -11,7 +11,8 @@ from bokeh.io import show,curdoc
 from bokeh.plotting import figure
 from bokeh.layouts import gridplot
 from bokeh.embed import components
-
+from bokeh.events import ButtonClick
+from bokeh.models.glyphs import Segment
 
 
 def randomData():
@@ -32,7 +33,7 @@ def randomData():
 
     return df
 
-def saveGrid(grid):
+def writeToJs(grid):
     script, div = components(grid)
     script = script[35:]  # removes the <script> tag at the beginning
     script = script[:-9]  # removes the </script> tag at the end
@@ -48,7 +49,7 @@ def saveGrid(grid):
             end_index += 1
     end_index -= 1
     replace_me = script[start_index:end_index]
-    script = script.replace(replace_me, 'AvailabilityPlotElementID')
+    script = script.replace(replace_me, 'DustIndexPlotElementID')
     print(replace_me)
 
     # write everything out as .js file:
@@ -100,7 +101,9 @@ def createHoverTool():
             'DIT': 'printf',  # use 'printf' formatter
         },
         # display a tooltip whenever the cursor is vertically in line with a glyph
-        mode='vline'
+        mode='vline',
+        callback=CustomJS(code=open("vline_callback.js").read(), args=dict(line_source=line_source,source=source)),
+        point_policy='follow_mouse'
     )
     return hover
 
@@ -108,12 +111,16 @@ def setGrid(both=False):
     if both:
         grid = gridplot([[p1], [p2]], plot_width=1200, plot_height=300)
     else:
-        grid = gridplot([[p1]], plot_width=1200, plot_height=300)
+        grid = gridplot([[p1],[button1]], plot_width=1200, plot_height=300)
     return grid
 
 def update():
     source.data = source.from_df(data[['time','DIL','DIT']])
     source_static.data = source.data
+    # line_source.data =
+
+def button1_callback(event):
+    setGrid(True)
 
 if __name__ == "__main__":
     datestr = "20171111"
@@ -123,8 +130,7 @@ if __name__ == "__main__":
     source = ColumnDataSource(data=dict(time=[],DIL=[],DIT=[]))
     source_static = ColumnDataSource(data=dict(time=[],DIL=[],DIT=[]))
 
-
-    # time,data = randomData()
+    line_source = ColumnDataSource(data=dict(x=[data["time"].values[0]]))
 
     factors = ["Dust Index Low", "Dust Index Total"]
     means = [data['DIL'].mean(0), data['DIT'].mean(0)]
@@ -138,13 +144,11 @@ if __name__ == "__main__":
     #TODO: Write the level on top of the Line
 
     hover = createHoverTool()
-    button = Button(name="show_more",label="More information", button_type="success",width=150,height=0,
-                    callback=(CustomJS(code=open("show_more_callback.js").read())))
 
     toolbox = [hover]
     x_range = Range1d(start=0, end=0.01)
     p1 = figure(title="Dust Index", responsive=True,x_range=x_range,y_range=factors, tools="")
-    p1.segment(0, factors, means , factors, line_width=4, line_color="black", )
+    p1.segment(0, factors, means , factors, line_width=4, line_color="black")
     p1.circle(means, factors, size=15, fill_color="orange", line_color="black", line_width=3, )
     p1.xaxis.visible = False
     p1.xgrid.visible = False
@@ -152,19 +156,31 @@ if __name__ == "__main__":
     p1.border_fill_color = None
     p1.background_fill_color = None
 
-    p2 = figure(responsive=True, tools=toolbox)
-    p2.line(x="time",y="DIL",source=source,line_width=3,line_color='blue',name='DIL-Line')
-    p2.line(x="time",y="DIT",source=source,line_width=3,line_color='red')
+    p2 = figure(responsive=True, tools=toolbox, y_range=(0,0.01),x_axis_type="datetime")
+    DILline = p2.line(x="time",y="DIL",source=source,line_width=3,line_color='blue',name='DIL-Line')
+    DITline = p2.line(x="time",y="DIT",source=source,line_width=3,line_color='red')
     p2.border_fill_color = None
     p2.background_fill_color = None
 
-    grid = gridplot([[p1],[p2]], plot_width=1200,plot_height=300)
-    grid = gridplot([[p1]], plot_width=1200, plot_height=300)
+    p2.segment(x0='x', y0=0, x1='x', y1=5, line_width=3, source=line_source, line_color='black', line_dash="dashed")
+    # hover = HoverTool(tooltips=None, point_policy='follow_mouse',
+    #                   callback=CustomJS(code=js, args={'line_source': line_source}))
+
+    # p2.xaxis.visible= False
+    # p2.xgrid.visible=False
+    # p2.ygrid.visible=False
+    # p2.yaxis.visible=False
+    # DILline.visible=False
+    # DITline.visible=False
+
+    button1 = Button(name="show_more",label="More information", button_type="success",width=150,height=0,
+                    callback=(CustomJS(args=dict(DIL=DILline,DIT=DITline),
+                                       code=open("show_more_callback.js").read())))
+
     # initialize bottom graph:
     update()
-    grid = setGrid()
-
+    grid = gridplot([[p1], [p2]], plot_width=1200, plot_height=300)
     curdoc().add_root(grid)
 
     # show(grid)
-    saveGrid(grid)
+    writeToJs(grid)
